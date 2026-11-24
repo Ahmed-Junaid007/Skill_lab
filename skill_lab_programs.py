@@ -140,10 +140,10 @@ print(rev)'''#reversing a string using for loop
          else:
               print('@',end='  ')
     print()'''#printing a square pattern of 1 and @
-for i in range(1,6):
+'''for i in range(1,6):
     for j in range(1,6):
         if i>j:
             print('0',end=' ')
         else:
             print('1',end=' ')
-    print()
+    print()'''#printing a square pattern of 0 and 1
