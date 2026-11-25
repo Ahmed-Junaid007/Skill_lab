@@ -147,3 +147,118 @@ print(rev)'''#reversing a string using for loop
         else:
             print('1',end=' ')
     print()'''#printing a square pattern of 0 and 1
+#with arg with return 
+'''def convert(s):
+    out=""
+    for i in s:
+        if "a"<=i<="z":
+            out+=chr(ord(i)-32)
+        else:
+            out+=i
+    return out
+print(convert(input("enter:"))'''
+
+#with arg without return
+"""def convert(s,out):
+    for i in s:
+        if "a"<=i<="z":
+            out+=chr(ord(i)-32)
+        else:
+            out+=i
+    print(out)
+    return(10)
+print(convert(input("enter:")))"""
+#without arg with return
+'''def convert():
+    s=input("Enter:")
+    out=""
+    for i in s:
+        if "a"<=i<="z":
+            out+=chr(ord(i)-32)
+        else:
+            out+=i
+    return out
+print(convert())'''
+#CLASS AND OBJECTS
+'''class college:
+    cname="GOPALAN COLLEGE OF ENGINEERING AND MANAGEMENT"
+    Cloc="Hoodi"
+s1=college()
+print(s1.cname,s1.Cloc)
+print('changing the location of college with respect to object')
+s1.cname="GCEM"
+print(s1.cname,s1.Cloc)
+print('changing the location of college with respect to class')
+college.Cloc="Bangalore"
+print(college.cname,college.Cloc)'''
+'''class College:
+    cname="GOPALAN COLLEGE OF ENGINEERING AND MANAGEMENT"
+    Cloc="Hoodi"
+s1=College()
+s1.name="Ahmed"
+s1.phone=9897119007
+s2=College()
+s2.name="Amir"
+s2.phone=9897119008
+
+print(s1.Cloc)
+s1.Cloc="KR Puram"
+print("After changing the location of college with respect to object s1")
+print("Location of college with respect to object s1:",s1.Cloc)
+print("Location of college with respect to object s2:",s2.Cloc)
+print(s1.name,s1.phone)
+print(s2.name,s2.phone)'''#changing the location of college with respect to object s1 and checking the location of college with respect to object s2
+#using init method
+'''class college:
+    def __init__(self,name,phone,usn):
+        self.name=name
+        self.phone=phone
+        self.usn=usn
+s1=college("Ahmed",9897119007,"1GD25CS001")
+s2=college("Amir",9897119008,"1GD25CS002")
+print(s1.name,s1.phone,s1.usn)
+print(s2.name,s2.phone,s2.usn)'''#using init method and creating objects with parameters
+'''class college:
+    def __init__(self,name,phone,usn):
+        self.name=name
+        self.phone=phone
+        self.usn=usn
+    def display(self):
+        print(self.name,self.phone,self.usn)
+s1=college("Ahmed",9897119007,"1GD25CS001")
+s2=college("Amir",9897119008,"1GD25CS002")
+s1.display()
+s2.display()'''#using init method and creating objects with parameters and using display method to display the details of the objects
+'''class college:
+    def __init__(self,name,phone,usn):
+        self.name=name
+        self.phone=phone
+        self.usn=usn
+    def display(self):
+        print(self.name,self.phone,self.usn)
+    def edit(self,new):
+        self.name=new
+s1=college("Ahmed",9897119007,"1GD25CS001")
+s2=college("Amir",9897119008,"1GD25CS002")
+s1.display()
+s2.display()
+s1.edit("Ahmed Junaid")
+s1.display()'''#editing name with def edit and displaying the details of the objects
+'''class college:
+    cname="GOPALAN COLLEGE OF ENGINEERING AND MANAGEMENT"
+    cloc="Hoodi"
+    @classmethod
+    def disp(cls):
+        print(cls.cname,cls.cloc)
+    def __init__(self,name,phone,usn):
+        self.name=name
+        self.phone=phone
+        self.usn=usn
+    def display(self):
+        print(self.name,self.phone,self.usn)
+s1=college("Ahmed",9897119007,"1GD25CS001")
+s2=college("Amir",9897119008,"1GD25CS002")
+s1.display()
+s2.display()
+s1.disp()
+s2.disp()'''#Using class method to display the details of the class 
