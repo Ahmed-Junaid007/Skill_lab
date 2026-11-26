@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI – Gemini Learning Lab</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#172033;background:#f3f6fb}
+*{box-sizing:border-box}body{margin:0;padding:30px 16px}
+main{max-width:950px;margin:auto;background:#fff;border:1px solid #e4eaf2;border-radius:18px;padding:28px;box-shadow:0 12px 40px #1e293b12}
+h1{margin:0 0 8px;font-size:28px;color:#14264b}
+.subtitle{color:#64748b;line-height:1.55;margin:0 0 24px}
+label{display:block;font-weight:700;margin:17px 0 8px}
+input,textarea{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:9px;font:14px Arial}
+input:focus,textarea:focus{outline:2px solid #bfdbfe;border-color:#3b82f6}
+textarea{min-height:100px;resize:vertical;line-height:1.5}
+.top-settings{padding:15px;background:#f8fbff;border:1px solid #dbeafe;border-radius:11px;margin-bottom:22px}
+.hint{font-size:13px;color:#64748b;line-height:1.5;margin:7px 0 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.action{border:1px solid #dbe4f0;border-radius:12px;padding:17px;background:#fff}
+.action h2{font-size:17px;margin:0 0 8px;color:#1e3a8a}
+.action p{font-size:14px;color:#64748b;line-height:1.5;min-height:42px}
+button{font:700 14px Arial;border:0;border-radius:9px;padding:12px 16px;cursor:pointer}
+.primary{background:#2563eb;color:white}.primary:hover{background:#1d4ed8}
+.secondary{background:#eaf1ff;color:#1d4ed8}
+button:disabled{opacity:.55;cursor:wait}
+#question{min-height:90px}
+.result-wrap{margin-top:24px}
+.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.result-head h2{font-size:19px;margin:0}
+#status{margin:13px 0;color:#475569;min-height:20px}
+#answer{white-space:pre-wrap;line-height:1.65;color:#243247;background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:18px;min-height:65px;overflow-wrap:anywhere}
+.empty{color:#94a3b8}
+.error{color:#b42318!important}.success{color:#167647!important}
+.warning{margin-top:23px;padding:13px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;color:#9a3412;font-size:13px;line-height:1.5}
+@media(max-width:650px){main{padding:19px}h1{font-size:23px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Agentic AI – Gemini Learning Lab</h1>
+<p class="subtitle">Explore Agentic AI and ask questions using Google's Gemini model. This single-file app brings together the activities from your Jupyter notebook.</p>
+
+<section class="top-settings">
+<label for="apiKey">Gemini API key</label>
+<input id="apiKey" type="password" placeholder="Enter your Gemini API key" autocomplete="off">
+<p class="hint">The key stays in this page's memory and is not saved to local storage. Do not share this HTML file with your API key.</p>
+<label for="model">Gemini model</label>
+<input id="model" type="text" value="gemini-3.5-flash-lite">
+<p class="hint">Default model matches your original notebook. If it is unavailable to your API key, enter a model currently enabled in your Google AI Studio project.</p>
+</section>
+
+<div class="grid">
+<section class="action">
+<h2>1. Understand Agentic AI</h2>
+<p>Get a simple-English explanation of Agentic AI.</p>
+<button class="primary" id="explainBtn">Explain Agentic AI</button>
+</section>
+<section class="action">
+<h2>2. Learn with examples</h2>
+<p>Ask Gemini to explain Agentic AI with three examples.</p>
+<button class="primary" id="examplesBtn">Explain with 3 examples</button>
+</section>
+</div>
+
+<section class="action" style="margin-top:14px">
+<h2>3. Ask Gemini anything</h2>
+<label for="question">Your question</label>
+<textarea id="question" placeholder="Type your question here..."></textarea>
+<p class="hint">Ask a question and Gemini will generate a response.</p>
+<button class="primary" id="askBtn" style="margin-top:12px">Ask Gemini</button>
+</section>
+
+<section class="result-wrap">
+<div class="result-head">
+<h2>Gemini response</h2>
+<button class="secondary" id="copyBtn" type="button">Copy response</button>
+</div>
+<div id="status" aria-live="polite">Enter your API key, then choose an activity above.</div>
+<div id="answer" class="empty">Your Gemini response will appear here.</div>
+</section>
+
+<div class="warning"><strong>Security note:</strong> This is a browser-only HTML file, so the API key is sent directly from your browser to Google's Gemini API. Anyone with access to the page or browser developer tools may be able to retrieve it. Use this for local personal testing only. Do not publish it with a real API key. A backend is needed to protect keys in a public application.</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function setStatus(message,kind=""){
+  $("status").textContent=message;
+  $("status").className=kind;
+}
+async function askGemini(prompt,button){
+  const key=$("apiKey").value.trim();
+  const model=$("model").value.trim();
+  if(!key){setStatus("Please enter your Gemini API key.","error");$("apiKey").focus();return;}
+  if(!model){setStatus("Please enter a Gemini model name.","error");$("model").focus();return;}
+  if(!/^[A-Za-z0-9._-]+$/.test(model)){setStatus("The model name contains invalid characters.","error");return;}
+
+  button.disabled=true;
+  const oldText=button.textContent;
+  button.textContent="Generating...";
+  setStatus("Connecting to Gemini...");
+  $("answer").textContent="";
+  $("answer").classList.remove("empty");
+
+  try{
+    const url="https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent";
+    const response=await fetch(url,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-goog-api-key":key},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok){
+      const message=data?.error?.message||"Gemini API request failed (HTTP "+response.status+").";
+      throw new Error(message);
+    }
+    const answer=data?.candidates?.[0]?.content?.parts
+      ?.map(part=>part.text||"").join("\n").trim();
+    if(!answer)throw new Error("Gemini returned an empty or unexpected response. Please try again.");
+    $("answer").textContent=answer;
+    setStatus("Response generated successfully.","success");
+  }catch(error){
+    $("answer").textContent="No response available.";
+    $("answer").classList.add("empty");
+    let message=error.message||"Something went wrong.";
+    if(message==="Failed to fetch")message="Could not connect to Gemini. Check your internet connection, API key and browser network access.";
+    setStatus(message,"error");
+  }finally{
+    button.disabled=false;
+    button.textContent=oldText;
+  }
+}
+$("explainBtn").addEventListener("click",()=>askGemini(
+  "Explain Agentic AI in simple English.",$("explainBtn")
+));
+$("examplesBtn").addEventListener("click",()=>askGemini(
+  "Explain Agentic AI in simple English with 3 examples.",$("examplesBtn")
+));
+$("askBtn").addEventListener("click",()=>{
+  const question=$("question").value.trim();
+  if(!question){setStatus("Please type a question first.","error");$("question").focus();return;}
+  askGemini(question,$("askBtn"));
+});
+$("copyBtn").addEventListener("click",async()=>{
+  const text=$("answer").textContent;
+  if(!text||$("answer").classList.contains("empty")){setStatus("There is no response to copy.","error");return;}
+  try{
+    await navigator.clipboard.writeText(text);
+    setStatus("Response copied to clipboard.","success");
+  }catch(e){
+    setStatus("Clipboard access is unavailable. Select and copy the response manually.","error");
+  }
+});
+</script>
+</body>
+</html>
