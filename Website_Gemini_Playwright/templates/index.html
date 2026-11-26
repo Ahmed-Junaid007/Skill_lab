@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini + Playwright Amazon Search</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:32px 16px;background:#f3f6fb;color:#172033;font-family:Arial,Helvetica,sans-serif}
+main{max-width:1000px;margin:auto;background:#fff;border:1px solid #e3e9f2;border-radius:16px;padding:28px;box-shadow:0 12px 36px #1e293b12}
+h1{margin:0 0 8px;color:#14264b;font-size:27px}.muted{color:#64748b;line-height:1.55}
+label{display:block;font-weight:700;margin:20px 0 8px}
+input{width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:9px;font-size:15px}
+button{border:0;border-radius:9px;padding:13px 18px;background:#2563eb;color:white;font-weight:700;cursor:pointer}
+button:disabled{opacity:.55;cursor:wait}.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+#status{margin:18px 0;min-height:22px;color:#475569}.error{color:#b42318!important}.success{color:#167647!important}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:16px}
+.product{border:1px solid #e2e8f0;border-radius:12px;padding:16px;background:#fff}
+.product h3{font-size:15px;line-height:1.45;margin:0 0 12px}
+.price{font-size:18px;font-weight:700;color:#0f5132;margin:7px 0}
+.rating{color:#64748b;font-size:13px;margin:6px 0 12px}
+a{color:#1d4ed8;text-decoration:none;font-weight:700}a:hover{text-decoration:underline}
+.info{background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:12px;color:#1e40af;font-size:13px;line-height:1.5;margin-top:18px}
+@media(max-width:600px){main{padding:19px}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Gemini + Playwright Amazon Search</h1>
+<p class="muted">Describe the product you want. Gemini can turn your request into a focused search phrase, then Playwright opens Amazon India in Chromium and collects product listings.</p>
+<label for="query">What are you looking for?</label>
+<input id="query" value="wireless mouse under 1000" placeholder="e.g. wireless mouse under ₹1,000">
+<div class="row"><button id="searchBtn">Search Amazon India</button></div>
+<div id="status" aria-live="polite">Enter a product request and start the search.</div>
+<div id="results" class="results"></div>
+<div class="info"><strong>How it works:</strong> Flask runs Playwright and Chromium on your computer. If GEMINI_API_KEY is configured in the server environment, Gemini refines your natural-language request first. Without the key, Playwright searches the exact text you entered.</div>
+</main>
+<script>
+const btn=document.getElementById("searchBtn"),statusEl=document.getElementById("status"),results=document.getElementById("results");
+function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
+btn.addEventListener("click",async()=>{
+ const query=document.getElementById("query").value.trim();
+ results.replaceChildren();
+ if(!query){statusEl.textContent="Please enter a product request.";statusEl.className="error";return}
+ btn.disabled=true;btn.textContent="Searching...";statusEl.textContent="Starting Chromium and searching Amazon India...";statusEl.className="";
+ try{
+  const res=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query})});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error||"Search failed.");
+  statusEl.textContent=`Search: "${data.query}" · ${data.products.length} product(s) found`+(data.gemini_used?" · Gemini assisted":" · Direct Playwright search");
+  statusEl.className="success";
+  if(!data.products.length){results.append(el("p","muted","No product cards could be extracted. Amazon may have changed its page layout."));}
+  data.products.forEach(p=>{
+   const card=el("article","product");
+   card.append(el("h3","",p.name),el("div","price",p.price),el("div","rating",p.rating));
+   if(p.url){const a=el("a","", "View on Amazon");a.href=p.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a)}
+   results.append(card);
+  });
+ }catch(e){statusEl.textContent=e.message==="Failed to fetch"?"Cannot reach the local Flask server. Start app.py and open http://127.0.0.1:5000.":e.message;statusEl.className="error"}
+ finally{btn.disabled=false;btn.textContent="Search Amazon India"}
+});
+document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")btn.click()});
+</script>
+</body>
+</html>
